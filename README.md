@@ -16,10 +16,13 @@ Avant de lancer le projet, assure-toi d'avoir installé :
 * [Java](https://www.java.com/) (requis pour exécuter Minecraft)
 
 ## 🛠️ Installation
+deux options :
 
-1. **Cloner le dépôt :**
+1. installer la version de votre choix dans l'onglet release
+
+2. **Cloner le dépôt :**
    ```bash
    git clone [https://github.com/Delgaetan/CubexLauncher.git](https://github.com/Delgaetan/CubexLauncher.git)
    cd CubexLauncher
 
-   ou alors simplement installer le .exe déjà compié dans le release
+
