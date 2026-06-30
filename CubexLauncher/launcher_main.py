@@ -5,10 +5,27 @@ import minecraft_launcher_lib
 import os
 import subprocess
 import threading
+import sys
 
 # Variables globales
 PSEUDO = "player"
 VERSION = "alpha.1.0.1"
+
+
+
+def resource_path(relative_path):
+    """ Permet d'obtenir le chemin absolu vers les ressources, indispensable pour auto-py-to-exe """
+    try:
+        # PyInstaller crée un dossier temporaire dans _MEIPASS au moment de l'exécution
+        base_path = sys._MEIPASS
+    except Exception:
+        # Si on l'exécute normalement depuis PyCharm
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+
 
 roaming_directory = os.getenv('APPDATA')
 minecraft_directory = os.path.join(roaming_directory, ".CubexLauncher")
@@ -27,14 +44,14 @@ ctk.set_default_color_theme("green")
 app = ctk.CTk()
 app.title("Cubex Launcher")
 app.geometry("1200x600")
-app.iconbitmap("icons/box.ico")
+app.iconbitmap(resource_path("icons/box.ico"))  # Modifié avec resource_path
 app._fg_color = "#b8d8be"
 app.configure(fg_color="#c8e1cc")
 
 app.update()
 pywinstyles.change_header_color(app, color="green")
 
-
+# Récupération de la liste des versions de Minecraft
 all_versions_raw = minecraft_launcher_lib.utils.get_version_list()
 liste_versions = [v["id"] for v in all_versions_raw if v["type"] == "release"]
 
@@ -43,12 +60,10 @@ maximum_value = 0
 
 
 def set_status(status: str):
-    # Met à jour le texte du bouton d'installation pour voir l'action actuelle
     button_ins.configure(text=status)
 
 
 def set_progress(progress: int):
-    # Met à jour la barre (prend une valeur entre 0.0 et 1.0)
     if maximum_value > 0:
         progress_bar.set(progress / maximum_value)
 
@@ -84,17 +99,17 @@ def play_button():
 def action_installation():
     """Cette fonction effectue l'installation en arrière-plan"""
     version_choisie = option_version.get()
-    button_ins.configure(state="disabled")  # Désactive le bouton pendant l'installation
+    button_ins.configure(state="disabled")  # Désactive le bouton pendant le téléchargement
 
-    # CORRECTION ICI : versionid devient version
     minecraft_launcher_lib.install.install_minecraft_version(
-        version=version_choisie,
+        version=version_choisie,  # Correction de versionid -> version
         minecraft_directory=minecraft_directory,
         callback=callback
     )
 
     button_ins.configure(text="Installation faite !", state="normal")
-    progress_bar.set(0)  # Réinitialise la barre une fois fini
+    progress_bar.set(0)  # Réinitialise la barre
+
 
 def install_minecraft():
     # On lance l'installation dans un Thread séparé pour ne pas freeze l'UI
@@ -102,23 +117,24 @@ def install_minecraft():
     thread.start()
 
 
-# Design de l'interface
+
 frame_bg = ctk.CTkFrame(app, width=500, height=800, fg_color="#b8d8be")
 frame_bg.place(relx=0.5, rely=0.50, anchor="center")
 
 label_version = ctk.CTkLabel(app, text="Cubex Launcher  :  " + VERSION)
 label_version.grid(row=0, column=0)
 
+
 logocubex = ctk.CTkImage(
-    light_image=Image.open("icons/box.ico"),
-    dark_image=Image.open("icons/box.ico"),
+    light_image=Image.open(resource_path("icons/box.ico")),
+    dark_image=Image.open(resource_path("icons/box.ico")),
     size=(200, 200)
 )
 
 label_image = ctk.CTkLabel(master=app, image=logocubex, text="", fg_color="#b8d8be")
 label_image.place(relx=0.5, rely=0.20, anchor="center")
 
-# Gestion du pseudo dynamique
+
 pseudo_var = ctk.StringVar()
 
 
@@ -145,12 +161,12 @@ button_ins = ctk.CTkButton(app, text="Installer la version sélectionnée", comm
                            height=40)
 button_ins.place(relx=0.5, rely=0.74, anchor="center")
 
-
+# Barre de progression
 progress_bar = ctk.CTkProgressBar(app, width=250)
-progress_bar.set(0)  # Initialement vide
+progress_bar.set(0)
 progress_bar.place(relx=0.5, rely=0.81, anchor="center")
 
-
+# Menu déroulant contenant toutes les versions
 option_version = ctk.CTkOptionMenu(app, values=liste_versions)
 option_version.place(relx=0.5, rely=0.90, anchor="center")
 
