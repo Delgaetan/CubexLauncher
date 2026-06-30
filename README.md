@@ -21,3 +21,5 @@ Avant de lancer le projet, assure-toi d'avoir installé :
    ```bash
    git clone [https://github.com/Delgaetan/CubexLauncher.git](https://github.com/Delgaetan/CubexLauncher.git)
    cd CubexLauncher
+
+ou alors simplement installer le .exe déjà compié dans le release
