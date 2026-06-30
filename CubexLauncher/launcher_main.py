@@ -4,10 +4,11 @@ from PIL import Image
 import minecraft_launcher_lib
 import os
 import subprocess
+import threading
 
 # Variables globales
 PSEUDO = "player"
-VERSION = "alpha.1.0.0"
+VERSION = "alpha.1.0.1"
 
 roaming_directory = os.getenv('APPDATA')
 minecraft_directory = os.path.join(roaming_directory, ".CubexLauncher")
@@ -34,35 +35,71 @@ app.update()
 pywinstyles.change_header_color(app, color="green")
 
 # Récupération de la liste des versions de Minecraft
-# On récupère toutes les versions et on filtre pour n'avoir que les "releases" (versions stables)
 all_versions_raw = minecraft_launcher_lib.utils.get_version_list()
 liste_versions = [v["id"] for v in all_versions_raw if v["type"] == "release"]
 
+# --- Fonctions de Callbacks pour la barre de progression ---
+maximum_value = 0
+
+
+def set_status(status: str):
+    # Met à jour le texte du bouton d'installation pour voir l'action actuelle
+    button_ins.configure(text=status)
+
+
+def set_progress(progress: int):
+    # Met à jour la barre (prend une valeur entre 0.0 et 1.0)
+    if maximum_value > 0:
+        progress_bar.set(progress / maximum_value)
+
+
+def set_max(new_max: int):
+    global maximum_value
+    maximum_value = new_max
+
+
+callback = {
+    "setStatus": set_status,
+    "setProgress": set_progress,
+    "setMax": set_max
+}
+
+
+# ----------------------------------------------------------
+
 
 def play_button():
-    # On récupère la version actuellement sélectionnée dans le menu déroulant
     version_choisie = option_version.get()
     print(f"Démarrage du jeu en version : {version_choisie}...")
 
-    # On génère les options de test
     options = minecraft_launcher_lib.utils.generate_test_options()
 
-    # On génère la commande avec la version choisie
     minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(
         version_choisie, minecraft_directory, options
     )
 
-    # On exécute la commande pour lancer le jeu
     subprocess.run(minecraft_command)
 
 
-def install_minecraft():
-    # On récupère la version actuellement sélectionnée dans le menu déroulant
+def action_installation():
+    """Cette fonction effectue l'installation en arrière-plan"""
     version_choisie = option_version.get()
-    print(f"Installation de la version {version_choisie} en cours...")
+    button_ins.configure(state="disabled")  # Désactive le bouton pendant l'installation
 
-    minecraft_launcher_lib.install.install_minecraft_version(version_choisie, minecraft_directory)
-    print("Installation faite avec succès !")
+    # CORRECTION ICI : versionid devient version
+    minecraft_launcher_lib.install.install_minecraft_version(
+        version=version_choisie,
+        minecraft_directory=minecraft_directory,
+        callback=callback
+    )
+
+    button_ins.configure(text="Installation faite !", state="normal")
+    progress_bar.set(0)  # Réinitialise la barre une fois fini
+
+def install_minecraft():
+    # On lance l'installation dans un Thread séparé pour ne pas freeze l'UI
+    thread = threading.Thread(target=action_installation)
+    thread.start()
 
 
 # Design de l'interface
@@ -102,13 +139,18 @@ pseudo.place(relx=0.5, rely=0.45, anchor="center")
 
 # Boutons et Menus
 button_start = ctk.CTkButton(app, text="Start", command=play_button, width=200, height=80)
-button_start.place(relx=0.5, rely=0.65, anchor="center")
+button_start.place(relx=0.5, rely=0.61, anchor="center")
 
-# Correction effectuée : suppression des parenthèses sur command=install_minecraft
-button_ins = ctk.CTkButton(app, text="Install la version sélectionnée", command=install_minecraft, width=200, height=40)
-button_ins.place(relx=0.5, rely=0.80, anchor="center")
+button_ins = ctk.CTkButton(app, text="Installer la version sélectionnée", command=install_minecraft, width=250,
+                           height=40)
+button_ins.place(relx=0.5, rely=0.74, anchor="center")
 
-# Menu déroulant contenant toutes les versions (Correction effectuée : values=liste_versions sans crochets supplémentaires)
+# --- AJOUT DE LA BARRE DE PROGRESSION ---
+progress_bar = ctk.CTkProgressBar(app, width=250)
+progress_bar.set(0)  # Initialement vide
+progress_bar.place(relx=0.5, rely=0.81, anchor="center")
+
+# Menu déroulant contenant toutes les versions
 option_version = ctk.CTkOptionMenu(app, values=liste_versions)
 option_version.place(relx=0.5, rely=0.90, anchor="center")
 
