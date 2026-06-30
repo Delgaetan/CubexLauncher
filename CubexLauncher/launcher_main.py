@@ -16,10 +16,10 @@ VERSION = "alpha.1.0.1"
 def resource_path(relative_path):
     """ Permet d'obtenir le chemin absolu vers les ressources, indispensable pour auto-py-to-exe """
     try:
-        # PyInstaller crée un dossier temporaire dans _MEIPASS au moment de l'exécution
+
         base_path = sys._MEIPASS
     except Exception:
-        # Si on l'exécute normalement depuis PyCharm
+
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
@@ -99,16 +99,16 @@ def play_button():
 def action_installation():
     """Cette fonction effectue l'installation en arrière-plan"""
     version_choisie = option_version.get()
-    button_ins.configure(state="disabled")  # Désactive le bouton pendant le téléchargement
+    button_ins.configure(state="disabled")
 
     minecraft_launcher_lib.install.install_minecraft_version(
-        version=version_choisie,  # Correction de versionid -> version
+        version=version_choisie,
         minecraft_directory=minecraft_directory,
         callback=callback
     )
 
     button_ins.configure(text="Installation faite !", state="normal")
-    progress_bar.set(0)  # Réinitialise la barre
+    progress_bar.set(0)
 
 
 def install_minecraft():
