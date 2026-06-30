@@ -34,11 +34,11 @@ app.configure(fg_color="#c8e1cc")
 app.update()
 pywinstyles.change_header_color(app, color="green")
 
-# Récupération de la liste des versions de Minecraft
+
 all_versions_raw = minecraft_launcher_lib.utils.get_version_list()
 liste_versions = [v["id"] for v in all_versions_raw if v["type"] == "release"]
 
-# --- Fonctions de Callbacks pour la barre de progression ---
+
 maximum_value = 0
 
 
@@ -65,7 +65,7 @@ callback = {
 }
 
 
-# ----------------------------------------------------------
+
 
 
 def play_button():
@@ -145,12 +145,12 @@ button_ins = ctk.CTkButton(app, text="Installer la version sélectionnée", comm
                            height=40)
 button_ins.place(relx=0.5, rely=0.74, anchor="center")
 
-# --- AJOUT DE LA BARRE DE PROGRESSION ---
+
 progress_bar = ctk.CTkProgressBar(app, width=250)
 progress_bar.set(0)  # Initialement vide
 progress_bar.place(relx=0.5, rely=0.81, anchor="center")
 
-# Menu déroulant contenant toutes les versions
+
 option_version = ctk.CTkOptionMenu(app, values=liste_versions)
 option_version.place(relx=0.5, rely=0.90, anchor="center")
 
